@@ -1,0 +1,22 @@
+<?php
+/**
+ * @file
+ */
+
+/**
+ * Implements hook_install().
+ *
+ * When we install our module, ensure it's set to run *before* globalredirect.
+ */
+function globalredirect_disable_install() {
+  $weight = db_select('system', 's')
+    ->fields('s', array('weight'))
+    ->condition('name', 'globalredirect', '=')
+    ->execute()
+    ->fetchField();
+
+  db_update('system')
+    ->fields(array('weight' => $weight - 1))
+    ->condition('name', 'globalredirect_disable', '=')
+    ->execute();
+}

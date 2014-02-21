@@ -1,0 +1,78 @@
+<?php
+/**
+ * @file
+ * This module exists solely to let us disable Global Redirect on specific
+ * paths. This is necessary when we have code using hook_url_inbound_alter()
+ * as that conflicts with Global Redirect.
+ *
+ * At this time (Nov 25, 2013) the functionality to disable Global Redirect
+ * for specific paths does not exist within the Global Redirect module itself.
+ * At a point in the future when that does become available, this module
+ * should no longer be necessary.
+ *
+ * @see https://drupal.org/node/1438584
+ *
+ * Nov 25, 2013: Kendall Anderson
+ */
+
+define('GLOBALREDIRECT_DISABLE_VAR_PATHS', 'globalredirect_disable_paths');
+
+
+/**
+ * Implements hook_init().
+ */
+function globalredirect_disable_init() {
+  $path = request_path();
+
+  $excludes = explode("\n", variable_get(GLOBALREDIRECT_DISABLE_VAR_PATHS, ''));
+  if (!count($excludes)) {
+    return;
+  }
+  foreach ($excludes as $exclude_regex) {
+    $exclude_regex = trim($exclude_regex);
+    if (empty($exclude_regex)) {
+      continue;
+    }
+    if (preg_match($exclude_regex, $path)) {
+      // Setting a value in the $_POST array causes Global Redirect to be
+      // disabled. The actual key and value we're using are irrelevant. The
+      // mere presence of anything in $_POST disables Global Redirect.
+      $_POST['globalredirect'] = FALSE;
+      return;
+    }
+  }
+}
+
+
+/**
+ * Implements hook_menu().
+ */
+function globalredirect_disable_menu() {
+  $items = array();
+  $items['admin/config/system/globalredirect-disable'] = array(
+    'title' => 'Global Redirect Disable',
+    'description' => "Disable globalredirect module for specific paths.",
+    'type' => MENU_NORMAL_ITEM,
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('globalredirect_disable_admin_settings'),
+    'access arguments' => array('access administration pages'),
+  );
+  return $items;
+}
+
+
+/**
+ * Provide the module configuration settings form.
+ */
+function globalredirect_disable_admin_settings() {
+  $form = array();
+
+  $form[GLOBALREDIRECT_DISABLE_VAR_PATHS] = array(
+    '#type' => 'textarea',
+    '#title' => t('Disable Global Redirect on pages that match these paths'),
+    '#description' => "Specify page paths by entering regex values. Enter one path per line. Assume each line will be passed directly to preg_match(), and include the leading and trailing slashes. <br><br>Some examples:<ul><li>/contact-received(.*)$/</li><li>/blog$/</li><li>/blog\/.*$/</li><li>/ajax\/(static|dynamic)/</li></ul>",
+    '#default_value' => variable_get(GLOBALREDIRECT_DISABLE_VAR_PATHS, ''),
+  );
+
+  return system_settings_form($form);
+}

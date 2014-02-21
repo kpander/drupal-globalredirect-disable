@@ -1,0 +1,10 @@
+name = "GlobalRedirect Disable by Path"
+description = "Disable the Global Redirect module if the current page matches defined paths."
+package = "Path management"
+configure = admin/config/system/globalredirect-disable
+
+core = 7.x
+
+version = "7.x-1.0"
+
+dependencies[] = globalredirect
