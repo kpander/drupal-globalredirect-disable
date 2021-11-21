@@ -1,3 +1,9 @@
+NOTE: This repo is a legacy Drupal 7.x module and is no longer maintained or considered relevant. It was originally hosted here:
+
+  - https://www.drupal.org/sandbox/kpander/2202555
+
+---
+
 README.txt
 ==========
 GLOBAL REDIRECT DISABLE allows you to conditionally disable the Global Redirect 
